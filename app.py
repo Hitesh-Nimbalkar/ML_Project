@@ -53,15 +53,23 @@ def collect_input_data():
     return input_data
 
 
-def load_models(file_path):
-    models = {}
-    if os.path.isfile(file_path) and file_path.endswith(('.joblib', '.pkl')):
-        model_name = os.path.basename(file_path).split('.')[0]
-        model = joblib.load(file_path)
-        st.write("Model File Path :")
-        st.write(file_path)
-        models[model_name] = model
-    return models
+def load_model(model_path):
+    """
+    Load a machine learning model from a joblib file.
+
+    Parameters:
+    - model_path (str): The file path to the joblib file containing the model.
+
+    Returns:
+    - model: The loaded machine learning model.
+    """
+    try:
+        model = joblib.load(model_path)
+        print(f"Model loaded successfully from {model_path}")
+        return model
+    except Exception as e:
+        print(f"Error loading the model from {model_path}: {e}")
+        return None
 
 
 def make_prediction(model, input_data):
@@ -88,11 +96,10 @@ def load_preprocessor_from_file(file_path):
 def main():
     st.title("Model Prediction App")
 
-    # User input for the folder containing models
-    model_folder = st.text_input("Enter the path to the model folder:", "Notebook/Models/XGBoost")
 
     # Load models from the specified folder
-    models = load_models(model_folder)
+    Xg_boost_model = load_model(model_path="Notebook/Models/XGBoost/XGBoost_model.pkl")
+    Rf_model = load_model(model_path="Notebook/Models/Random Forest/Random Forest_model.pkl")
 
     # Assuming preprocess_object is your preprocessing object
     preprocessor = load_preprocessor_from_file(file_path="Notebook/Preprocessor/one_hot_encoder.joblib")  # Implement a function to load your preprocessor object
@@ -110,19 +117,20 @@ def main():
             input_data = preprocess_data(input_data, preprocessor)
             
             # Display the input_data DataFrame on the Streamlit page
-            st.write("Prepricessed Data:")
+            st.write("Preprocessed Data:")
             st.write(input_data)
-
-            # Make predictions for each model
-            predictions = {}
-            for model_name, model in models.items():
-                prediction = make_prediction(model, input_data)
-                predictions[model_name] = prediction[0]
 
             # Display predictions
             st.write("Predictions:")
-            for model_name, prediction in predictions.items():
-                st.write(f"- {model_name}: {prediction}")
+            st.write(" XG Boost Model Prediction")
+            prediction = make_prediction(Xg_boost_model, input_data)
+            st.write(prediction)
+            
+            st.write(" Random Forest Model Prediction")
+            prediction = make_prediction(Rf_model, input_data)
+            st.write(prediction)
+
+
 
         except ValueError:
             st.error("Invalid input data. Please enter valid values.")
