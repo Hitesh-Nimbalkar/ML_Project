@@ -3,7 +3,8 @@ import pandas as pd
 import joblib
 import os
 import numpy as np
-
+import yaml
+import lightgbm 
 
 def display_categories():
     categories_info = {
@@ -92,49 +93,122 @@ def load_preprocessor_from_file(file_path):
     preprocessor = joblib.load(file_path)
     return preprocessor
 
+def load_yaml_parameters(file_path):
+    """
+    Load parameters from a YAML file.
 
+    Parameters:
+    - file_path: Path to the YAML file.
+
+    Returns:
+    - parameters: Dictionary containing parameters.
+    """
+    with open(file_path, 'r') as file:
+        parameters = yaml.safe_load(file)
+    return parameters
+
+def load_and_display_yaml(file_path):
+    """
+    Load parameters from a YAML file and display them in Streamlit.
+
+    Parameters:
+    - file_path: Path to the YAML file.
+
+    Returns:
+    - None
+    """
+    st.title("Model Parameter Display")
+
+    # Load parameters from YAML file
+    parameters = load_yaml_parameters(file_path)
+
+    # Display parameters in Streamlit
+    st.sidebar.title("Model Parameters")
+
+    # Extract model-specific parameters
+    model_name = parameters.get("Model", "Unknown")
+    model_params_str = parameters.get("Model_Parameters", "")
+    r2_score = parameters.get("R2_Score", "Unknown")
+
+    # Display model name and R2 score
+    st.sidebar.text(f"Model: {model_name}")
+    st.sidebar.text(f"R2 Score: {r2_score}")
+
+    # Display model-specific parameters
+    if model_params_str:
+        st.sidebar.text("Model Parameters:")
+        try:
+            # Parse the model parameters string as a dictionary
+            model_params = yaml.safe_load(model_params_str.replace("''", '"'))
+            for param_name, param_value in model_params.items():
+                st.sidebar.text(f"{param_name}: {param_value}")
+        except Exception as e:
+            st.sidebar.error(f"Error parsing model parameters: {e}")
 def main():
     st.title("Model Prediction App")
-
 
     # Load models from the specified folder
     Xg_boost_model = load_model(model_path="Notebook/Models/XGBoost/XGBoost_model.pkl")
     Rf_model = load_model(model_path="Notebook/Models/Random Forest/Random Forest_model.pkl")
-
+    gbm_model = load_model(model_path="Notebook/Models/LightGBM/LightGBM_model.joblib")
     # Assuming preprocess_object is your preprocessing object
     preprocessor = load_preprocessor_from_file(file_path="Notebook/Preprocessor/one_hot_encoder.joblib")  # Implement a function to load your preprocessor object
 
     # User input for prediction data
     input_data = collect_input_data()
-    
+
     # Display the input_data DataFrame on the Streamlit page
     st.write("Input Data:")
     st.write(input_data)
+
+ 
 
     if st.button("Make Predictions"):
         try:
             # Preprocess the input data
             input_data = preprocess_data(input_data, preprocessor)
-            
+
             # Display the input_data DataFrame on the Streamlit page
             st.write("Preprocessed Data:")
             st.write(input_data)
 
-            # Display predictions
-            st.write("Predictions:")
-            st.write(" XG Boost Model Prediction")
-            prediction = make_prediction(Xg_boost_model, input_data)
-            st.write(prediction)
+            Predictions = []
+
+            # Display predictions and parameters
+            # XG Boost Model
+            st.write("XG Boost Model Prediction")
+            prediction_xgb = make_prediction(Xg_boost_model, input_data)
+            st.write(f"Prediction: {prediction_xgb}")
+
+            Predictions.append(prediction_xgb)
             
-            st.write(" Random Forest Model Prediction")
-            prediction = make_prediction(Rf_model, input_data)
-            st.write(prediction)
+            load_and_display_yaml(file_path="Notebook/Models/XGBoost/XGBoost_params.yaml")
+
+            # Random Forest
+            st.write("Random Forest Model Prediction")
+            prediction_rf = make_prediction(Rf_model, input_data)
+            st.write(f"Prediction: {prediction_rf}")
+
+            Predictions.append(prediction_rf)
+            load_and_display_yaml(file_path="Notebook/Models/Random Forest/Random_Forest_params.yaml")
 
 
+            ## Gradient Boost
+            st.write("Gradient Boost Model Prediction")
+            prediction_gbm = make_prediction(gbm_model, input_data)
+            st.write(f"Prediction: {prediction_gbm}")
+ 
+            Predictions.append(prediction_gbm)
+            load_and_display_yaml(file_path="Notebook/Models/LightGBM/LightGBM_params.yaml")
 
-        except ValueError:
-            st.error("Invalid input data. Please enter valid values.")
 
+            avg_prediction = np.mean(Predictions)
+
+            st.write("Average of Predictions")
+            st.write(avg_prediction)
+
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     main()
