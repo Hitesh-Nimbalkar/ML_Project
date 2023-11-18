@@ -18,7 +18,7 @@ def display_categories():
         "Customer_Information": ['Working Class', 'Wealthy']
     }
 
-    st.title("Categories Information")
+    st.title("Categorical Features")
 
     # Collect user input for each category
     categorical_data = {}
@@ -30,6 +30,8 @@ def display_categories():
 
 
 def collect_input_data():
+    st.title("Numerical Features")
+
     # Collect numerical inputs
     weight = st.number_input("Weight", min_value=0.0)
     price_of_sculpture = st.number_input("Price of Sculpture", min_value=0.0)
@@ -79,7 +81,7 @@ def make_prediction(model, input_data):
     
     st.write("Predictions :")
     st.write(prediction)
-    return prediction
+    return  round(prediction[0], 2)
 
 
 def preprocess_data(input_data, preprocessor):
@@ -117,19 +119,20 @@ def load_and_display_yaml(file_path):
     Returns:
     - None
     """
-    st.title("Model Parameter Display")
 
     # Load parameters from YAML file
     parameters = load_yaml_parameters(file_path)
 
-    # Display parameters in Streamlit
-    st.sidebar.title("Model Parameters")
+
 
     # Extract model-specific parameters
-    model_name = parameters.get("Model", "Unknown")
+    model_name = parameters.get(f"Model", "Unknown")
     model_params_str = parameters.get("Model_Parameters", "")
     r2_score = parameters.get("R2_Score", "Unknown")
 
+    # Display parameters in Streamlit
+    st.sidebar.title(f"{model_name}")
+    
     # Display model name and R2 score
     st.sidebar.text(f"Model: {model_name}")
     st.sidebar.text(f"R2 Score: {r2_score}")
@@ -144,8 +147,16 @@ def load_and_display_yaml(file_path):
                 st.sidebar.text(f"{param_name}: {param_value}")
         except Exception as e:
             st.sidebar.error(f"Error parsing model parameters: {e}")
+            
+            
+def make_prediction_with_loading_spinner(model, input_data):
+    with st.spinner("Making Predictions..."):
+        prediction = model.predict(input_data)
+    return round(np.exp(prediction[0]), 2)
+
+
 def main():
-    st.title("Model Prediction App")
+    st.title("Cost Prediction")
 
     # Load models from the specified folder
     Xg_boost_model = load_model(model_path="Notebook/Models/XGBoost/XGBoost_model.pkl")
@@ -161,8 +172,6 @@ def main():
     st.write("Input Data:")
     st.write(input_data)
 
- 
-
     if st.button("Make Predictions"):
         try:
             # Preprocess the input data
@@ -174,38 +183,39 @@ def main():
 
             Predictions = []
 
-            # Display predictions and parameters
+            # Display predictions and parameters in three columns
+            col1, col2, col3 = st.columns(3)
+
             # XG Boost Model
-            st.write("XG Boost Model Prediction")
-            prediction_xgb = make_prediction(Xg_boost_model, input_data)
-            st.write(f"Prediction: {prediction_xgb}")
+            with col1:
+                st.write("XG Boost Model Prediction")
+                prediction_xgb = make_prediction_with_loading_spinner(Xg_boost_model, input_data)
+                st.write(f"Cost Prediction: {round(prediction_xgb,2)}")
+                Predictions.append(round(prediction_xgb,2))
+                load_and_display_yaml(file_path="Notebook/Models/XGBoost/XGBoost_params.yaml")
 
-            Predictions.append(prediction_xgb)
-            
-            load_and_display_yaml(file_path="Notebook/Models/XGBoost/XGBoost_params.yaml")
+            # Random Forest Model
+            with col2:
+                st.write("Random Forest Model Prediction")
+                prediction_rf = make_prediction_with_loading_spinner(Rf_model, input_data)
+                st.write(f"Cost Prediction: {prediction_rf}")
+                Predictions.append(prediction_rf)
+                load_and_display_yaml(file_path="Notebook/Models/Random Forest/Random_Forest_params.yaml")
 
-            # Random Forest
-            st.write("Random Forest Model Prediction")
-            prediction_rf = make_prediction(Rf_model, input_data)
-            st.write(f"Prediction: {prediction_rf}")
-
-            Predictions.append(prediction_rf)
-            load_and_display_yaml(file_path="Notebook/Models/Random Forest/Random_Forest_params.yaml")
-
-
-            ## Gradient Boost
-            st.write("Gradient Boost Model Prediction")
-            prediction_gbm = make_prediction(gbm_model, input_data)
-            st.write(f"Prediction: {prediction_gbm}")
- 
-            Predictions.append(prediction_gbm)
-            load_and_display_yaml(file_path="Notebook/Models/LightGBM/LightGBM_params.yaml")
-
+            # LightGBM Model
+            with col3:
+                st.write("Gradient Boost Model Prediction")
+                prediction_gbm = make_prediction_with_loading_spinner(gbm_model, input_data)
+                st.write(f"Cost Prediction: {prediction_gbm}")
+                Predictions.append(prediction_gbm)
+                load_and_display_yaml(file_path="Notebook/Models/LightGBM/LightGBM_params.yaml")
 
             avg_prediction = np.mean(Predictions)
 
-            st.write("Average of Predictions")
-            st.write(avg_prediction)
+            st.success("Predictions Completed!")
+            st.write("Average of Predictions:")
+            formatted_avg_prediction = "{:.2f}".format(avg_prediction)
+            st.success(formatted_avg_prediction)
 
         except Exception as e:
             st.error(f"An error occurred: {e}")
