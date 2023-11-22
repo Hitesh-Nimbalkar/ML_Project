@@ -1,4 +1,4 @@
 Model: LightGBM
-Model_Parameters: '{''n_estimators'': 142, ''learning_rate'': 0.07390053499902295,
-  ''max_depth'': 7}'
-R2_Score: '0.9208284785901015'
+Model_Parameters: '{''n_estimators'': 196, ''learning_rate'': 0.0961161082800111,
+  ''max_depth'': 9}'
+R2_Score: '0.9211006250684881'
