@@ -1,4 +1,4 @@
 Model: XGBoost
-Model_Parameters: '{''n_estimators'': 50, ''learning_rate'': 0.09769008031242282,
+Model_Parameters: '{''n_estimators'': 50, ''learning_rate'': 0.08941512231540452,
   ''max_depth'': 6}'
-R2_Score: '0.9201564391608301'
+R2_Score: '0.9138446125238419'
