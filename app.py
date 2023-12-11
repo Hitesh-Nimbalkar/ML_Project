@@ -15,7 +15,19 @@ def display_categories():
         "Installation_Included": ['No', 'Yes'],
         "Transport": ['Airways', 'Roadways', 'Waterways'],
         "Fragile": ['No', 'Yes'],
-        "Customer_Information": ['Working Class', 'Wealthy']
+        "Customer_Information": ['Working Class', 'Wealthy'],
+        "Remote_Location":['urban','remote'],
+        "State":['Georgia', 'Pennsylvania', 'North Carolina', 'Alabama', 'Arkansas',
+                'AA', 'Mississippi', 'South Carolina', 'New Jersey', 'AP',
+                'Wyoming', 'California', 'Massachusetts', 'Missouri', 'Tennessee',
+                'District of Columbia', 'North Dakota', 'Utah', 'Louisiana',
+                'Kansas', 'Delaware', 'Illinois', 'Idaho', 'Oregon', 'Arizona',
+                'Florida', 'Nebraska', 'Virginia', 'West Virginia', 'Oklahoma',
+                'Connecticut', 'Alaska', 'Maine', 'Maryland', 'New Mexico',
+                'Rhode Island', 'Colorado', 'Michigan', 'Vermont', 'Kentucky',
+                'Montana', 'Iowa', 'Indiana', 'New Hampshire', 'Nevada', 'Ohio',
+                'AE', 'Minnesota', 'Texas', 'South Dakota', 'Washington',
+                'New York', 'Wisconsin', 'Hawaii']
     }
 
     st.title("Categorical Features")
@@ -36,11 +48,15 @@ def collect_input_data():
     weight = st.number_input("Weight", min_value=0.0)
     price_of_sculpture = st.number_input("Price of Sculpture", min_value=0.0)
     base_shipping_price = st.number_input("Base Shipping Price", min_value=0.0)
+    Height = st.number_input("Height", min_value=0.0)
+    Width = st.number_input("Width", min_value=0.0)
 
     # Log-transform numerical inputs
     weight_log = np.log1p(weight + 1)
     price_of_sculpture_log = np.log1p(price_of_sculpture + 1)
     base_shipping_price_log = np.log1p(base_shipping_price + 1)
+    Height_log = np.log1p(Height + 1)
+    Width_log = np.log1p(Width + 1)
 
     # Collect categorical inputs
     categorical_data = display_categories()
@@ -50,6 +66,8 @@ def collect_input_data():
         "Weight": [weight_log],
         "Price_Of_Sculpture": [price_of_sculpture_log],
         "Base_Shipping_Price": [base_shipping_price_log],
+        "Height": [Height_log],
+        "Width": [Width_log],
         **categorical_data
     })
 
@@ -84,10 +102,39 @@ def make_prediction(model, input_data):
     return  round(prediction[0], 2)
 
 
-def preprocess_data(input_data, preprocessor):
+
+
+def preprocess_data(input_data, encoder):
     # Apply preprocessing to the input data
-    preprocessed_data = preprocessor.transform(input_data)
-    return preprocessed_data
+
+    # Print input data columns before transformation
+    print("Input Data Columns (Before Transformation):")
+    column_order = ['Artist_Reputation', 'Height', 'Width', 'Weight', 'Material',
+                    'Price_Of_Sculpture', 'Base_Shipping_Price', 'International',
+                    'Express_Shipment', 'Installation_Included', 'Transport', 'Fragile',
+                    'Customer_Information', 'Remote_Location', 'State']
+
+    input_data = input_data[column_order]
+
+    categorical_columns = ['Artist_Reputation',
+                           'Material',
+                           'International',
+                           'Express_Shipment',
+                           'Installation_Included',
+                           'Transport',
+                           'Fragile',
+                           'Customer_Information',
+                           'Remote_Location',
+                           'State']
+
+    # Use the pre-trained encoder to transform the categorical columns
+    one_hot_encoded_data = encoder.transform(input_data[categorical_columns])
+
+    # Concatenate the one-hot encoded features with the non-categorical features
+    input_data_transformed = np.concatenate([input_data.drop(columns=categorical_columns).values, one_hot_encoded_data], axis=1)
+
+    return input_data_transformed
+
 
 
 def load_preprocessor_from_file(file_path):
@@ -159,8 +206,8 @@ def main():
     st.title("Cost Prediction")
 
     # Load models from the specified folder
-    Xg_boost_model = load_model(model_path="Notebook/Models/XGBoost/XGBoost_model.pkl")
-    Rf_model = load_model(model_path="Notebook/Models/Random Forest/Random Forest_model.pkl")
+    Xg_boost_model = load_model(model_path="Notebook/Models/XGBoost/XGBoost_model.joblib")
+    Rf_model = load_model(model_path="Notebook/Models/Random Forest/Random Forest_model.joblib")
     gbm_model = load_model(model_path="Notebook/Models/LightGBM/LightGBM_model.joblib")
     # Assuming preprocess_object is your preprocessing object
     preprocessor = load_preprocessor_from_file(file_path="Notebook/Preprocessor/one_hot_encoder.joblib")  # Implement a function to load your preprocessor object
@@ -175,6 +222,8 @@ def main():
     if st.button("Make Predictions"):
         try:
             # Preprocess the input data
+            print("---------")
+            print(type(preprocessor))
             input_data = preprocess_data(input_data, preprocessor)
 
             # Display the input_data DataFrame on the Streamlit page
@@ -200,7 +249,7 @@ def main():
                 prediction_rf = make_prediction_with_loading_spinner(Rf_model, input_data)
                 st.write(f"Cost Prediction: {prediction_rf}")
                 Predictions.append(prediction_rf)
-                load_and_display_yaml(file_path="Notebook/Models/Random Forest/Random_Forest_params.yaml")
+                load_and_display_yaml(file_path="Notebook/Models/Random Forest/Random Forest_params.yaml")
 
             # LightGBM Model
             with col3:

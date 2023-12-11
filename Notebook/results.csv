@@ -1,0 +1,4 @@
+Model,Best_Parameters,Final_Optimized_Score
+XGBoost,"{'n_estimators': 50, 'learning_rate': 0.09879100682931803, 'max_depth': 6}",0.9150354988168238
+Random Forest,"{'n_estimators': 143, 'max_depth': 10, 'min_samples_split': 3, 'min_samples_leaf': 5}",0.9113094863067811
+LightGBM,"{'n_estimators': 135, 'learning_rate': 0.059610854315466706, 'max_depth': 10}",0.9166463986392727
