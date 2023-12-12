@@ -233,7 +233,7 @@ def main():
             Predictions = []
 
             # Display predictions and parameters in three columns
-            col2  = st.columns(3)
+            col1, _, _ = st.columns(3)
 
             # XG Boost Model
          #   with col1:
@@ -244,9 +244,10 @@ def main():
         #        load_and_display_yaml(file_path="Notebook/Models/XGBoost/XGBoost_params.yaml")
 
             # Random Forest Model
-            with col2:
+            with col1:
                 st.write("Random Forest Model Prediction")
                 prediction_rf = make_prediction_with_loading_spinner(Rf_model, input_data)
+                print(" Prediction Done")
                 st.write(f"Cost Prediction: {prediction_rf}")
                 Predictions.append(prediction_rf)
                 load_and_display_yaml(file_path="Notebook/Models/Random Forest/Random Forest_params.yaml")
@@ -259,11 +260,11 @@ def main():
           #      Predictions.append(prediction_gbm)
          #       load_and_display_yaml(file_path="Notebook/Models/LightGBM/LightGBM_params.yaml")
 
-            #avg_prediction = np.mean(Predictions)
+            avg_prediction = np.mean(Predictions)
 
             st.success("Predictions Completed!")
             st.write("Predictions:")
-            formatted_avg_prediction = "{:.2f}".format(Predictions)
+            formatted_avg_prediction = "{:.2f}".format(avg_prediction)
             st.success(formatted_avg_prediction)
 
         except Exception as e:
