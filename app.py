@@ -206,9 +206,9 @@ def main():
     st.title("Cost Prediction")
 
     # Load models from the specified folder
-    Xg_boost_model = load_model(model_path="Notebook/Models/XGBoost/XGBoost_model.joblib")
+    #Xg_boost_model = load_model(model_path="Notebook/Models/XGBoost/XGBoost_model.joblib")
     Rf_model = load_model(model_path="Notebook/Models/Random Forest/Random Forest_model.joblib")
-    gbm_model = load_model(model_path="Notebook/Models/LightGBM/LightGBM_model.joblib")
+    #gbm_model = load_model(model_path="Notebook/Models/LightGBM/LightGBM_model.joblib")
     # Assuming preprocess_object is your preprocessing object
     preprocessor = load_preprocessor_from_file(file_path="Notebook/Preprocessor/one_hot_encoder.joblib")  # Implement a function to load your preprocessor object
 
@@ -233,15 +233,15 @@ def main():
             Predictions = []
 
             # Display predictions and parameters in three columns
-            col1, col2, col3 = st.columns(3)
+            col2  = st.columns(3)
 
             # XG Boost Model
-            with col1:
-                st.write("XG Boost Model Prediction")
-                prediction_xgb = make_prediction_with_loading_spinner(Xg_boost_model, input_data)
-                st.write(f"Cost Prediction: {round(prediction_xgb,2)}")
-                Predictions.append(round(prediction_xgb,2))
-                load_and_display_yaml(file_path="Notebook/Models/XGBoost/XGBoost_params.yaml")
+         #   with col1:
+          #      st.write("XG Boost Model Prediction")
+         #       prediction_xgb = make_prediction_with_loading_spinner(Xg_boost_model, input_data)
+        #        st.write(f"Cost Prediction: {round(prediction_xgb,2)}")
+        #        Predictions.append(round(prediction_xgb,2))
+        #        load_and_display_yaml(file_path="Notebook/Models/XGBoost/XGBoost_params.yaml")
 
             # Random Forest Model
             with col2:
@@ -252,18 +252,18 @@ def main():
                 load_and_display_yaml(file_path="Notebook/Models/Random Forest/Random Forest_params.yaml")
 
             # LightGBM Model
-            with col3:
-                st.write("Gradient Boost Model Prediction")
-                prediction_gbm = make_prediction_with_loading_spinner(gbm_model, input_data)
-                st.write(f"Cost Prediction: {prediction_gbm}")
-                Predictions.append(prediction_gbm)
-                load_and_display_yaml(file_path="Notebook/Models/LightGBM/LightGBM_params.yaml")
+         #   with col3:
+          #      st.write("Gradient Boost Model Prediction")
+          #      prediction_gbm = make_prediction_with_loading_spinner(gbm_model, input_data)
+        #        st.write(f"Cost Prediction: {prediction_gbm}")
+          #      Predictions.append(prediction_gbm)
+         #       load_and_display_yaml(file_path="Notebook/Models/LightGBM/LightGBM_params.yaml")
 
-            avg_prediction = np.mean(Predictions)
+            #avg_prediction = np.mean(Predictions)
 
             st.success("Predictions Completed!")
-            st.write("Average of Predictions:")
-            formatted_avg_prediction = "{:.2f}".format(avg_prediction)
+            st.write("Predictions:")
+            formatted_avg_prediction = "{:.2f}".format(Predictions)
             st.success(formatted_avg_prediction)
 
         except Exception as e:
