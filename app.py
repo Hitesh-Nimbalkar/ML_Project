@@ -8,7 +8,7 @@ import lightgbm
 
 def display_categories():
     categories_info = {
-        "Artist_Reputation": ['Low_Reputation', 'High_Reputation', 'Moderate_Reputation', 'Very_High_Reputation'],
+        "Artist_Reputation": ['Low_Reputation', 'High_Reputation', 'Moderate_Reputation'],
         "Material": ['Brass', 'Clay', 'Aluminium', 'Bronze', 'Wood', 'Stone', 'Marble'],
         "International": ['Yes', 'No'],
         "Express_Shipment": ['Yes', 'No'],
